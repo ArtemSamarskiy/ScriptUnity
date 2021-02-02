@@ -1,4 +1,5 @@
 # Scripts
 
-## Animal
-The script creates the movements of the animal `Not physical`
+| Script | Physical | 3D/2D |
+|------------|------|--------|
+| Animal.cs | `Not` | `2D` |
