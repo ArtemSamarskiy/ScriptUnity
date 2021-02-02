@@ -8,23 +8,28 @@ using Random = UnityEngine.Random;
 public class Animal : MonoBehaviour
 {
 
-    [SerializeField, Min(.1f), Header("Animal speed")] private float speed = 3f;
+    [SerializeField, Min(.1f), Header("Animal speed")] private float speed = 300f;
     public UnityEvent moveEvent;
     public UnityEvent idleEvent;
 
-    private void Awake() => StartCoroutine(idle());
+    [SerializeField]
+    private Vector2 positionGoal = Vector2.zero;
+
+    private SpriteRenderer _spriteRenderer;
+    
+    private void Awake()
+    {
+        _spriteRenderer = GetComponent<SpriteRenderer>();
+        StartCoroutine(idle());
+    }
 
     IEnumerator idle()
     {
         idleEvent.Invoke();
+
+        positionGoal = (Vector2)transform.position + Random.insideUnitCircle * 3;
         
-        while (true)
-        {
-            if(Random.value <= .30f) break;
-            else if(Random.value <= .20f)
-                transform.rotation = Quaternion.Euler(0, transform.rotation.y == 0 ? 180 : 0, 0);
-            yield return new WaitForSeconds(1); 
-        }
+        yield return new WaitForSeconds(Random.value * 5);
 
         StartCoroutine(Move());
     }
@@ -32,11 +37,18 @@ public class Animal : MonoBehaviour
     IEnumerator Move()
     {
         moveEvent.Invoke();
+
+        Vector2 posFlip = (Vector2)transform.position - positionGoal;
+        _spriteRenderer.flipX = posFlip.x > 0;
         
         while (true)
         {
-            transform.Translate(Vector2.right * (Time.deltaTime * speed));
-            if(Random.value <= .004f) break;
+            Vector2 pos = (positionGoal - (Vector2) transform.position).normalized / speed;
+            transform.Translate(pos);
+
+            if (Vector2.Distance(positionGoal, transform.position) <= 1)
+                break;
+            
             yield return null;
         }
 
